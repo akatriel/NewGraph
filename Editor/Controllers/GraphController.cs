@@ -12,6 +12,7 @@ namespace NewGraph {
 
     public class GraphController {
 
+        public Action OnPortConnectionChange;
 		public event Action<IGraphModelData> OnGraphLoaded;
 		public event Action<IGraphModelData> OnBeforeGraphLoaded;
 
@@ -19,12 +20,13 @@ namespace NewGraph {
         public CopyPasteHandler copyPasteHandler = new CopyPasteHandler();
         public GraphView graphView;
 
-        private bool isLoading = false;
-        private InspectorControllerBase inspector;
-        private ContextMenu contextMenu;
-        private EdgeDropMenu edgeDropMenu;
-        private Dictionary<Actions, Action<object>> internalActions;
-        private Dictionary<object, NodeView> dataToViewLookup = new Dictionary<object, NodeView>();
+        protected bool isLoading = false;
+        protected InspectorControllerBase inspector;
+        protected ContextMenu contextMenu;
+        protected EdgeDropMenu edgeDropMenu;
+        protected Dictionary<Actions, Action<object>> internalActions;
+        protected Dictionary<object, NodeView> dataToViewLookup = new Dictionary<object, NodeView>();
+        public Action<IEnumerable<BaseEdge>> edgesToBeRemoved;
 
         public Vector2 GetViewScale() {
             return graphView.GetCurrentScale();
@@ -34,7 +36,11 @@ namespace NewGraph {
             graphView.ForEachNodeDo(callback);
         }
 
-        public GraphController(VisualElement uxmlRoot, VisualElement root, Type inspectorType) {
+        public GraphController()
+        {
+        }
+        public virtual void Initialize(VisualElement uxmlRoot, VisualElement root, Type inspectorType)
+        {
             graphView = new GraphView(uxmlRoot, root, OnGraphAction);
             graphView.OnViewTransformChanged -= OnViewportChanged;
             graphView.OnViewTransformChanged += OnViewportChanged;
@@ -85,7 +91,7 @@ namespace NewGraph {
             }
         }
 
-        private void OnEdgeDrop(object edge) {
+        protected void OnEdgeDrop(object edge) {
             BaseEdge baseEdge = (BaseEdge)edge;
             if(baseEdge == null) return;
 
@@ -97,7 +103,7 @@ namespace NewGraph {
             }
         }
 
-		private void OpenContextMenu(MouseDownEvent evt) {
+        protected void OpenContextMenu(MouseDownEvent evt) {
             if (evt.button == 1) {
 				graphView.schedule.Execute(() => {
 					if (graphView.IsFocusedElementNullOrNotBindable) {
@@ -110,7 +116,7 @@ namespace NewGraph {
         /// <summary>
         /// Re-focus the graph to the center based on all present nodes.
         /// </summary>
-        private void OnHomeClicked() {
+        protected void OnHomeClicked() {
             graphView.ClearSelection();
             FrameGraph();
         }
@@ -153,7 +159,7 @@ namespace NewGraph {
         /// Called when "something" was selected in this graph
         /// </summary>
         /// <param name="data">currently unused, check selected lists to get the actual selected objects...</param>
-        private void OnSelected(object data = null) {
+        protected void OnSelected(object data = null)
             inspector.SetInspectorContent(null);
             inspector.SetSelectedNodeInfoActive(active: false);
 
@@ -170,7 +176,7 @@ namespace NewGraph {
         /// Called when "something" was de-selected in this graph
         /// </summary>
         /// <param name="data">currently unused, check selected lists to get the actual selected objects...</param>
-        private void OnDeselected(object data = null) {
+        protected void OnDeselected(object data = null)
             inspector.SetInspectorContent(null);
             inspector.SetSelectedNodeInfoActive(active: false);
         }
@@ -214,7 +220,7 @@ namespace NewGraph {
         /// </summary>
         /// <param name="viewPosition"></param>
         /// <param name="nodes"></param>
-        private void PositionNodesRelative(Vector2 viewPosition, List<NodeModel> nodes) {
+        protected void PositionNodesRelative(Vector2 viewPosition, List<NodeModel> nodes) {
             if (nodes == null || nodes.Count == 0) {
                 return;
             }
@@ -318,25 +324,31 @@ namespace NewGraph {
         /// Called when an edge should be created...
         /// </summary>
         /// <param name="data">the edge</param>
-        private void OnEdgeCreate(object data = null) {
-            BaseEdge edge = (BaseEdge)data;
-            graphView.AddElement(edge);
+        protected virtual void OnEdgeCreate(object data = null)
+        {
+            if (data is BaseEdge edge)
+            {
+                graphView.AddElement(edge);
+            }
         }
 
         /// <summary>
         /// Called when an edge should be removed...
         /// </summary>
         /// <param name="data">the edge</param>
-        private void OnEdgeDelete(object data = null) {
-            BaseEdge edge = (BaseEdge)data;
-            graphView.RemoveElement(edge);
+        protected virtual void OnEdgeDelete(object data = null)
+        {
+            if (data is BaseEdge edge)
+            {
+                graphView.RemoveElement(edge);
+            }
         }
 
         /// <summary>
         /// Called when something in the viewport changed...
         /// </summary>
         /// <param name="data">unused</param>
-        private void OnViewportChanged(GraphElementContainer contentContainer) {
+        protected void OnViewportChanged(GraphElementContainer contentContainer) {
             if (graphData != null && graphData.BaseObject != null) {
                 graphData.SetViewport(contentContainer.transform.position, contentContainer.transform.scale);
             }
@@ -358,7 +370,7 @@ namespace NewGraph {
         /// </summary>
         /// <param name="actionType">the actionType that was recognized</param>
         /// <param name="data">The actionData object that was given</param>
-        private void OnGraphAction(Actions actionType, object data = null) {
+        protected virtual void OnGraphAction(Actions actionType, object data = null) {
             if (internalActions.ContainsKey(actionType)) {
                 internalActions[actionType](data);
             }
@@ -394,7 +406,7 @@ namespace NewGraph {
         /// Called when a new graph asset was created and should now be loaded...
         /// </summary>
         /// <param name="graphData"></param>
-        private void OnAfterGraphCreated(IGraphModelData graphData) {
+        protected virtual void OnAfterGraphCreated(IGraphModelData graphData) {
             graphView.ClearView();
             this.graphData = graphData;
         }
@@ -403,7 +415,7 @@ namespace NewGraph {
         /// Called when we should load a graph...
         /// </summary>
         /// <param name="graphData"></param>
-        private void OnShouldLoadGraph(IGraphModelData graphData) {
+        protected void OnShouldLoadGraph(IGraphModelData graphData) {
             inspector.CreateRenameGraphUI(graphData);
             inspector.Clear();
             Load(graphData);
@@ -421,7 +433,7 @@ namespace NewGraph {
         /// Called when we actually should load a graph...
         /// </summary>
         /// <param name="graphData"></param>
-        private void Load(IGraphModelData graphData) {
+        protected virtual void Load(IGraphModelData graphData) {
 			OnBeforeGraphLoaded?.Invoke(graphData);
 
 			// return early if we are already in the process of loading a graph...

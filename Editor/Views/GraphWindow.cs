@@ -33,23 +33,23 @@ namespace NewGraph {
         public Action OnWindowLoaded;
         public Action OnSelectionChanged;
         
-		public static VisualElement root => window.rootVisualElement;
+		public static VisualElement Root => window.rootVisualElement;
 
-		public static Type currentWindowType = null;
-        private static string currentWindowTypeKey = nameof(NewGraph) + "." + nameof(currentWindowType);
-        private static Type CurrentWindowType {
+		public static Type graphModelType = null;
+        private static string graphModelTypeKey = nameof(NewGraph) + "." + nameof(graphModelType);
+        private static Type GraphModelType {
             get {
-                if (currentWindowType == null) {
-                    string savedType = EditorPrefs.GetString(currentWindowTypeKey, null);
+                if (graphModelType == null) {
+                    string savedType = EditorPrefs.GetString(graphModelTypeKey, null);
                     if (savedType != null) {
-                        currentWindowType = Type.GetType(savedType);
+                        graphModelType = Type.GetType(savedType);
                     } 
                 }
-                return currentWindowType;
+                return graphModelType;
             }
             set {
-                currentWindowType = value;
-                EditorPrefs.SetString(currentWindowTypeKey, currentWindowType.AssemblyQualifiedName);
+                graphModelType = value;
+                EditorPrefs.SetString(graphModelTypeKey, graphModelType.AssemblyQualifiedName);
             }
         }
 
@@ -66,19 +66,19 @@ namespace NewGraph {
             InitializeWindowBase(typeof(ScriptableGraphModel));
         }*/
         
-        public static void AddWindowType(Type windowType, Type inspectorControllerType, Func<string, IGraphModelData> lastGraphCreationStrategy) {
-            if (!inspectorControllerLookup.ContainsKey(windowType)) {
-                inspectorControllerLookup.Add(windowType, inspectorControllerType);
-                lastGraphCreationStrategies.Add(windowType, lastGraphCreationStrategy);
-            }
-        }
+        //public static void AddWindowType(Type windowType, Type inspectorControllerType, Func<string, IGraphModelData> lastGraphCreationStrategy) {
+        //    if (!inspectorControllerLookup.ContainsKey(windowType)) {
+        //        inspectorControllerLookup.Add(windowType, inspectorControllerType);
+        //        lastGraphCreationStrategies.Add(windowType, lastGraphCreationStrategy);
+        //    }
+        //}
 
         public static void InitializeWindowBase(Type windowType) {
-            if (window != null && CurrentWindowType != windowType) {
+            if (window != null && GraphModelType != windowType) {
                 window.Close();
             }
             if (window == null) {
-                CurrentWindowType = windowType;
+                GraphModelType = windowType;
                 window = GetWindow<GraphWindow>(Settings.windowName, typeof(SceneView));
                 window.wantsMouseMove = true;
                 window.Show();
@@ -174,7 +174,8 @@ namespace NewGraph {
             rootVisualElement.Add(uxmlRoot);
             uxmlRoot.StretchToParentSize();
 
-            graphController = new GraphController(uxmlRoot, rootVisualElement, inspectorControllerLookup[CurrentWindowType]);
+            graphController = new GraphController();
+            graphController.Initialize(uxmlRoot, rootVisualElement, inspectorControllerLookup[GraphModelType]);
             rootVisualElement.styleSheets.Add(graphStylesheetVariables);
             rootVisualElement.styleSheets.Add(graphStylesheet); 
 

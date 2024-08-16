@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using GraphViewBase;
+using System;
 
 namespace NewGraph {
 
@@ -12,11 +13,11 @@ namespace NewGraph {
     public class NodeView : BaseNode {
 
         public VisualElement inspectorContent;
-        private ReactiveSettings reactiveSettings;
+        protected ReactiveSettings reactiveSettings;
         public List<EditableLabelElement> editableLabels = new List<EditableLabelElement>();
         public Color nodeColor;
         public bool shouldSetBackgroundColor = true;
-        private bool hasInspectorProperty = false;
+        protected bool hasInspectorProperty = false;
 
         public NodeController controller;
         public PortView inputPort = null;
@@ -29,7 +30,7 @@ namespace NewGraph {
             this.nodeColor = nodeColor;
         }
 
-        private void ColorizeBackground() {
+        protected void ColorizeBackground() {
             if (shouldSetBackgroundColor && nodeColor != default) {
                 style.backgroundColor = nodeColor;
             } else {
@@ -85,7 +86,7 @@ namespace NewGraph {
             BindUI(controller.GetSerializedObject());
         }
 
-        public void RebuildPortListView(PortListView view) {
+        public virtual void RebuildPortListView(PortListView view) {
             SerializedProperty prop = view.listProperty;
             PortInfo info = view.portInfo;
             view.Unbind();
@@ -98,15 +99,15 @@ namespace NewGraph {
             view.Bind(controller.GetSerializedObject());
         }
 
-        private void CreatePortListUI(PortInfo info, SerializedProperty property) {
+        protected virtual void CreatePortListUI(PortInfo info, SerializedProperty property) {
             portLists.Add(new PortListView(property, info, this, ExtensionContainer));
         }
 
-        private void CreateInputPortUI(PortInfo info, SerializedProperty property) {
+        protected void CreateInputPortUI(PortInfo info, SerializedProperty property) {
             inputPort = CreatePortUI(info, property);
         }
 
-        private void CreateOuputPortUI(PortInfo info, SerializedProperty property) {
+        protected void CreateOuputPortUI(PortInfo info, SerializedProperty property) {
             outputPorts.Add(CreatePortUI(info, property));
         }
 
@@ -131,7 +132,7 @@ namespace NewGraph {
             return port;
         }
 
-        private void CreatePropertyUI(VisualElement[] groupParents, GraphPropertyInfo propertyInfo, SerializedProperty property) {
+        protected void CreatePropertyUI(VisualElement[] groupParents, GraphPropertyInfo propertyInfo, SerializedProperty property) {
             PropertyField Create(VisualElement groupParent, Editability edtability) {
                 PropertyField propertyField = CreatePropertyField(property);
                 SetupPropertyField(propertyField, propertyInfo, edtability);
@@ -178,7 +179,7 @@ namespace NewGraph {
         }
 
 
-        private VisualElement[] CreateGroupUI(GroupInfo groupInfo, VisualElement[] parents, SerializedProperty property) {
+        protected VisualElement[] CreateGroupUI(GroupInfo groupInfo, VisualElement[] parents, SerializedProperty property) {
             VisualElement[] newGroups = new VisualElement[parents.Length];
 
             // handle special cases where we have an embedded managed reference that is within a group
@@ -273,7 +274,7 @@ namespace NewGraph {
             return newGroups;
         }
 
-        private void CreateLabelUI(SerializedProperty property) {
+        protected void CreateLabelUI(SerializedProperty property) {
 
             // Add label to title Container
             PropertyField propertyField = CreatePropertyField(property);
@@ -288,18 +289,18 @@ namespace NewGraph {
             }
         }
 
-        private void BindUI(SerializedObject serializedObject) {
+        protected void BindUI(SerializedObject serializedObject) {
             this.Bind(serializedObject);
         }
 
 
-        private void SetupPropertyField(VisualElement propertyField, GraphPropertyInfo propertyInfo, Editability editability) {
+        protected void SetupPropertyField(VisualElement propertyField, GraphPropertyInfo propertyInfo, Editability editability) {
             if (!propertyInfo.graphDisplay.editability.HasFlag(editability)) {
                 propertyField.SetEnabled(false);
             }
         } 
 
-        private PropertyField CreatePropertyField(SerializedProperty property) {
+        protected PropertyField CreatePropertyField(SerializedProperty property) {
             PropertyField propertyField = new PropertyField(property.Copy()) {
                 name = property.name,
                 bindingPath = property.propertyPath,
@@ -327,7 +328,7 @@ namespace NewGraph {
             return inspectorContent;
         }
 
-        private void SettingsChanged() {
+        protected void SettingsChanged() {
             style.width = Settings.nodeWidth;
         }
     }
