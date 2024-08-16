@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using GraphViewBase;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 
@@ -11,11 +14,12 @@ namespace NewGraph {
     using static GraphSettingsSingleton;
 
     public class PortListView : ListView {
-        public List<PortView> ports = new List<PortView>();
+        public List<PortView> ports = new();
         public SerializedProperty listProperty;
-        private NodeView nodeView;
+        private readonly NodeView nodeView;
         public PortInfo portInfo;
-        private VisualElement container;
+        private readonly VisualElement container;
+        private List<PortView> portsWithEdgesToBeRemoved;
 
         public PortListView(SerializedProperty listProperty, PortInfo portListInfo, NodeView nodeView, VisualElement container, int index=-1) {
 
@@ -85,7 +89,7 @@ namespace NewGraph {
 		private void RemoveEdges() {
 			for (int i = ports.Count - 1; i >= 0; i--) {
 				PortView port = ports[i];
-				GraphViewBase.BaseEdge[] edges = port.Connections.ToArray();
+                BaseEdge[] edges = port.Connections.ToArray();
 				for (int j = edges.Length - 1; j >= 0; j--) {
 					edges[j].Disconnect();
 				}
@@ -94,43 +98,33 @@ namespace NewGraph {
 			}
 		}
 
-        private void OnItemsRemoved(IEnumerable<int> indices) {
-			/*
-            foreach (var index in indices) {
-                PortView port = ports[index];
-
-                GraphViewBase.BaseEdge[] edges = port.Connections.ToArray();
-                for (int i = edges.Length - 1; i >= 0; i--) {
-                    edges[i].Disconnect();
-                }
-
-                Debug.Log("disconnect");
-                ports.Remove(port);
-            }*/
-
-			RemoveEdges();
-			nodeView.RebuildPortListView(this);
-        }
-
         /// <summary>
         /// We need to re-implement this basic behavior because unity's default behavior for this has a bug...
         /// </summary>
-        private void OnRemoveClicked() {
-            List<int> indices = new List<int>(selectedIndices);
+        private void OnRemoveClicked()
+        {
+            List<int> indices = new(selectedIndices);
             indices.Sort();
 
             listProperty.serializedObject.Update();
-            if (indices.Any()) {
-                for (int i = indices.Count - 1; i >= 0; i--) {
+            if (indices.Any())
+            {
+                CacheEdgesToBeRemoved(indices);
+                for (int i = indices.Count - 1; i >= 0; i--)
+                {
                     int index = indices[i];
-                    if (index >= 0 && index < listProperty.arraySize) {
+                    if (index >= 0 && index < listProperty.arraySize)
+                    {
                         listProperty.DeleteArrayElementAtIndex(index);
 
-                        if (index < listProperty.arraySize - 1) {
+                        if (index < listProperty.arraySize - 1)
+                        {
 							SerializedProperty currentProperty = listProperty.GetArrayElementAtIndex(index);
-                            for (int j = index + 1; j < listProperty.arraySize; j++) {
+                            for (int j = index + 1; j < listProperty.arraySize; j++)
+                            {
 								SerializedProperty nextProperty = listProperty.GetArrayElementAtIndex(j);
-                                if (nextProperty != null) {
+                                if (nextProperty != null)
+                                {
                                     currentProperty.isExpanded = nextProperty.isExpanded;
                                     currentProperty = nextProperty;
                                 }
@@ -139,18 +133,50 @@ namespace NewGraph {
                     }
                 }
                 ClearSelection();
-            } else if (listProperty.arraySize > 0) {
+            }
+            else if (listProperty.arraySize > 0)
+            {
 				int index = listProperty.arraySize - 1;
+                CacheEdgesToBeRemoved(new () { index });
                 viewController.RemoveItem(index);
                 indices.Add(index);
             }
 
-            if (indices.Any()) {
+            if (indices.Any())
+            {
                 listProperty.serializedObject.ApplyModifiedProperties();
             }
-            OnItemsRemoved(indices);
+            RemoveEdges();
+            nodeView.RebuildPortListView(this);
+            if (indices.Any())
+            {
+                InvokeEdgesToBeRemoved();
+            }
         }
 
+        private void InvokeEdgesToBeRemoved()
+        {
+            if (portsWithEdgesToBeRemoved?.Count > 0)
+            {
+                var portView = portsWithEdgesToBeRemoved.FirstOrDefault();
+                if (portView.ParentNode is NodeView nv && nv.controller.graphController is GraphController gc)
+                {
+                    gc.edgesToBeRemoved.Invoke(portsWithEdgesToBeRemoved.SelectMany(i => i.Connections));
+                }
+            }
+        }
+        private void CacheEdgesToBeRemoved(List<int> indices)
+        {
+            portsWithEdgesToBeRemoved = new List<PortView>(indices.Count);
+            foreach (var i in indices)
+            {
+                var portView = ports[i];
+                if (portView != null && portView.Connections.Any())
+                {
+                    portsWithEdgesToBeRemoved.Add(portView);
+                }
+            }
+        }
         private VisualElement MakeItem() {
             VisualElement itemRow = new VisualElement();
             itemRow.style.flexDirection = FlexDirection.Row;

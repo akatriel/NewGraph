@@ -15,7 +15,7 @@ namespace NewGraph {
     public abstract class InspectorControllerBase {
         private ReactiveSettings reactiveSettings;
 
-        private VisualElement commandPanel;
+        protected VisualElement commandPanel;
 		protected VisualElement inspectorRoot;
         private Label multipleNodesSelected;
 		protected VisualElement inspectorContainer;
@@ -51,7 +51,7 @@ namespace NewGraph {
             homeButton.Add(GraphSettings.HomeButtonIcon);
 
             Button inspectorButton;
-            inspectorButton = commandPanel.Q<Button>(nameof(inspectorButton));
+            inspectorButton = parent.Q<Button>(nameof(inspectorButton));
             inspectorButton.clicked += InspectorButtonClicked;
             inspectorButtonImage = new Image();
             inspectorButton.Add(inspectorButtonImage);

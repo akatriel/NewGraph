@@ -27,7 +27,7 @@ namespace NewGraph {
             this.OnAction = OnAction;
         }
 
-        private void OnKeyDown(Event evt) {
+        protected void OnKeyDown(Event evt) {
             ExecuteShortcutHandler(evt.keyCode, evt.modifiers);
         }
 

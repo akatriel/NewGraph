@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine.UIElements;
 
 namespace NewGraph {
 
@@ -13,7 +14,7 @@ namespace NewGraph {
         public SerializedProperty boundProperty;
         public List<Type> connectableTypes;
 
-        private Action connectionChangedCallback;
+        public Action connectionChangedCallback;
         private Func<Type,Type, bool> isValidConnectionCheck;
         private UnityEngine.Color targetColor;
 

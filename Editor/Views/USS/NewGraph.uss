@@ -128,14 +128,6 @@ Foldout.GroupInfo>Toggle{
     padding-left: 0;
 }
 
-#inspectorContainer {
-    padding-left: 5px;
-    background-color: rgb(65, 65, 65);
-    border-radius: 3px;
-    border-width: 1px;
-    border-color:rgb(26, 26, 26);
-}
-
 PortListView {
     margin-bottom: 5px;
 }
@@ -177,6 +169,14 @@ PortListView > ScrollView {
     border-top-right-radius: 0;
 }
 
+#inspectorContainer {
+    padding-left: 5px;
+    background-color: rgb(65, 65, 65);
+    border-radius: 3px;
+    border-width: 1px;
+    border-color:rgb(26, 26, 26);
+}
+
 #inspectorHeader, #commandPanel, #inspectorContainer{
     margin-left: 3px;
     margin-right: 3px;
@@ -192,26 +192,20 @@ PortListView > ScrollView {
     margin-top:5px;
 }
 
-#commandPanel {
-    position: absolute;
-    flex-direction: row;
-    justify-content: flex-end;
-    width: 220px;
-    height: 25px;
-    margin-left:-225px;
-    padding-top: 2px;
+#commandPanel Button Image, .baseGraphEditor Button.openGraphButton Image{
+    max-height:18px;
+    max-width:18px;
+    align-self:flex-end;
+    flex-shrink:1;
+    flex-grow: 0;
 }
-
-#commandPanel Button, .baseGraphEditor Button.openGraphButton {
-    flex-grow: 1;
-    padding-left: 5px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    margin-left: 1px;
-    margin-right: 1px;
-    -unity-font-style: bold;
-    border-radius: 0px;
+#commandPanel Button {
+    flex-grow:1;
+    flex-shrink:0;
     -unity-text-align: middle-left;
+    -unity-font-style: bold;
+    justify-content:center;
+    width:70px;
 }
 
 .baseGraphEditor ObjectField#unity-input-m_Script {
@@ -235,59 +229,6 @@ PortListView > ScrollView {
 
 .baseGraphEditor ListView.plainNodeList .unity-collection-view__item{
     padding-left: 5px;
-}
-
-.baseGraphEditor Button.openGraphButton {
-    width: 110px;
-    align-self: center;
-}
-
-#commandPanel Button Image, .baseGraphEditor Button.openGraphButton Image{
-    width: 20px;
-    height: 20px;
-    align-self:flex-end;
-}
-
-#commandPanel Button#saveButton Image{
-    width: 18px;
-}
-
-#commandPanel Button#homeButton {
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-    margin-left: 0px;
-    margin-right: 0px;
-    padding-right: 0px;
-    max-width: 23px;
-}
-
-#commandPanel Button#createButton {
-    padding-right: 0px;
-    max-width: 67px;
-}
-
-#commandPanel Button#saveButton {
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    margin-left: 0px;
-    margin-right: 0px;
-    padding-right: 2px;
-    max-width: 61px;
-    display:none;
-}
-
-#commandPanel Button#inspectorButton {
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    margin-left: 0px;
-    margin-right: 0px;
-    padding-right: 2px;
-    max-width: 23px;
-}
-
-#commandPanel Button#loadButton {
-    max-width: 60px;
-    padding-right: 0px;
 }
 
 #multipleNodesSelected {
