@@ -159,7 +159,7 @@ namespace NewGraph {
         /// Called when "something" was selected in this graph
         /// </summary>
         /// <param name="data">currently unused, check selected lists to get the actual selected objects...</param>
-        protected void OnSelected(object data = null)
+        protected void OnSelected(object data = null) { 
             inspector.SetInspectorContent(null);
             inspector.SetSelectedNodeInfoActive(active: false);
 
@@ -176,7 +176,7 @@ namespace NewGraph {
         /// Called when "something" was de-selected in this graph
         /// </summary>
         /// <param name="data">currently unused, check selected lists to get the actual selected objects...</param>
-        protected void OnDeselected(object data = null)
+        protected void OnDeselected(object data = null) {
             inspector.SetInspectorContent(null);
             inspector.SetSelectedNodeInfoActive(active: false);
         }
