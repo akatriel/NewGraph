@@ -28,7 +28,8 @@ namespace NewGraph {
             this.container = container;
             this.portInfo= portListInfo;
 
-            Label staticHeader = new Label(portListInfo.fieldName);
+            string portDisplayName = portListInfo.portDisplay.name;
+            Label staticHeader = new (string.IsNullOrEmpty(portDisplayName) ? portListInfo.fieldName : portDisplayName);
             staticHeader.AddToClassList(nameof(staticHeader));
             hierarchy.Add(staticHeader);
             staticHeader.SendToBack();
